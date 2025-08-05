@@ -1,5 +1,3 @@
-// Em: src/auth/auth.service.ts
-
 import { Inject, Injectable, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -34,8 +32,6 @@ export class AuthService {
       access_token: this.jwtService.sign(payload),
     };
   }
-
-  // ===== MÉTODO REGISTER COM OS CONSOLE.LOG PARA DEPURAÇÃO =====
   async register(userData: any) {
     console.log('--- [AuthService] Iniciando processo de registro ---');
     console.log('Dados recebidos do frontend:', userData);
@@ -54,7 +50,7 @@ export class AuthService {
         cpf: userData.cpf,
         data_nascimento: userData.data_nascimento,
         login: userData.login,
-        senha: hashedPassword, // mostrando que a senha está hasheada
+        senha: hashedPassword,
       });
 
       const newUser = await this.db
@@ -74,9 +70,8 @@ export class AuthService {
       return newUser;
 
     } catch (error) {
-      // ESTE É O LOG MAIS IMPORTANTE QUE PRECISAMOS VER
       console.error('--- ERRO CAPTURADO AO TENTAR INSERIR NO BANCO ---');
-      console.error(error); // Imprime o objeto de erro completo do banco de dados
+      console.error(error); 
       console.error('----------------------------------------------------');
 
       if (error.code === '23505') {
