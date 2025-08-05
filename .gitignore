@@ -1,0 +1,23 @@
+# Arquivos de Log e Dependências
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+node_modules
+dist
+.DS_Store
+
+# Arquivos de Ambiente (NUNCA ENVIE SENHAS PARA O GITHUB)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Cache e builds do Next.js (Frontend)
+.next/
+out/
+
+# Cache do NestJS (Backend)
+/dist
