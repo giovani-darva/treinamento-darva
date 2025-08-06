@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import Navbar from '../components/navbar';
 
 interface User {
   userId: number;
@@ -16,7 +17,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (!token) {
-      router.push('/'); 
+      router.push('/login'); 
       return;
     }
 
@@ -29,45 +30,44 @@ export default function DashboardPage() {
       } catch (error) {
         console.error('Falha ao buscar perfil, token inválido ou expirado:', error);
         localStorage.removeItem('access_token');
-        router.push('/'); 
+        router.push('/login'); 
       }
     };
     fetchUserProfile();
   }, [router]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('access_token');
-    router.push('/'); 
-  };
-
   if (!user) {
-    return <div className="w-screen min-h-screen flex items-center justify-center bg-gray-100">Carregando...</div>;
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <Navbar />
+        <div className="w-full flex items-center justify-center py-10">
+          Carregando...
+        </div>
+      </div>
+    );
   }
 
   return (
-    <main className="w-screen min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-md p-8 max-w-md w-full">
-        <div className="flex flex-col gap-4 text-center">
-          
-          <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
-          
-          <p className="text-lg text-gray-600">
-            Bem-vindo de volta, 
-            <span className="font-bold text-blue-600"> {user.login}</span>!
-          </p>
+    <div className="min-h-screen bg-gray-100">
+      <Navbar />
+      
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="bg-white rounded-lg shadow-md p-8">
+          <div className="flex flex-col gap-4 text-center">
+            <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
+            
+            <p className="text-lg text-gray-600">
+              Bem-vindo de volta, 
+              <span className="font-bold text-blue-600"> {user.login}</span>!
+            </p>
 
-          <p className="text-md text-gray-500">
-            Seu ID de usuário é: {user.userId}
-          </p>
-          
-          <button 
-            onClick={handleLogout} 
-            className="mt-4 py-2 px-4 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors"
-          >
-            Sair (Logout)
-          </button>
+            <p className="text-md text-gray-500">
+              Seu ID de usuário é: {user.userId}
+            </p>
+            
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }
