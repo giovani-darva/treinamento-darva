@@ -113,7 +113,7 @@ export default function SettingsPage() {
       <Navbar />
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <h1 className="text-2xl font-bold text-gray-800 mb-4">Gerenciamento de Usuários</h1>
-        
+
         <div className="bg-white shadow overflow-hidden sm:rounded-lg">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -128,31 +128,49 @@ export default function SettingsPage() {
               {users.map((user) => (
                 <tr key={user.id}>
                   {editingUserId === user.id ? (
-                    // MODO DE EDIÇÃO
+                    // ===== MODO DE EDIÇÃO COM BOTÕES ESTILIZADOS =====
                     <Fragment>
-                      <td className="px-6 py-4">
-                        <input type="text" name="nome" value={editingUserData?.nome} onChange={handleEditDataChange} className="w-full p-1 border rounded text-black"/>
-                      </td>
-                      <td className="px-6 py-4">
-                        <input type="text" name="login" value={editingUserData?.login} onChange={handleEditDataChange} className="w-full p-1 border rounded text-black"/>
-                      </td>
-                      <td className="px-6 py-4">
-                        <input type="text" name="cpf" value={editingUserData?.cpf} onChange={handleEditDataChange} className="w-full p-1 border rounded text-black"/>
-                      </td>
-                      <td className="px-6 py-4 text-right text-sm font-medium">
-                        <button onClick={() => handleSaveEdit(user.id)} className="text-green-600 hover:text-green-900 mr-4">Salvar</button>
-                        <button onClick={handleCancelEdit} className="text-gray-600 hover:text-gray-900">Cancelar</button>
+                      <td className="px-6 py-4"><input type="text" name="nome" value={editingUserData?.nome} onChange={handleEditDataChange} className="w-full p-1 border rounded text-black" /></td>
+                      <td className="px-6 py-4"><input type="text" name="login" value={editingUserData?.login} onChange={handleEditDataChange} className="w-full p-1 border rounded text-black" /></td>
+                      <td className="px-6 py-4"><input type="text" name="cpf" value={editingUserData?.cpf} onChange={handleEditDataChange} className="w-full p-1 border rounded text-black" /></td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                        <div className="flex flex-col md:flex-row gap-2">
+                          <button
+                            onClick={() => handleSaveEdit(user.id)}
+                            className="py-1 px-3 rounded-md font-semibold text-green-700 bg-green-100 hover:bg-green-200 transition-colors"
+                          >
+                            Salvar
+                          </button>
+                          <button
+                            onClick={handleCancelEdit}
+                            className="py-1 px-3 rounded-md font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
                       </td>
                     </Fragment>
                   ) : (
-                    // MODO DE VISUALIZAÇÃO
+                    // ===== MODO DE VISUALIZAÇÃO COM BOTÕES ESTILIZADOS =====
                     <Fragment>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">{user.nome}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{user.login}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{user.cpf}</td>
-                      <td className="px-6 py-4 text-right text-sm font-medium">
-                        <button onClick={() => handleEditClick(user)} className="text-indigo-600 hover:text-indigo-900 mr-4">Editar</button>
-                        <button onClick={() => handleDeleteClick(user)} className="text-red-600 hover:text-red-900">Excluir</button>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.nome}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.login}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.cpf}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                        <div className="flex flex-col md:flex-row gap-2">
+                          <button
+                            onClick={() => handleEditClick(user)}
+                            className="py-1 px-3 rounded-md font-semibold text-indigo-700 bg-indigo-100 hover:bg-indigo-200 transition-colors"
+                          >
+                            Editar
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(user)}
+                            className="py-1 px-3 rounded-md font-semibold text-red-700 bg-red-100 hover:bg-red-200 transition-colors"
+                          >
+                            Excluir
+                          </button>
+                        </div>
                       </td>
                     </Fragment>
                   )}
