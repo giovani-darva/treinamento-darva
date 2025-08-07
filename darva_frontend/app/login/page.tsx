@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -11,6 +11,13 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      router.push('/dashboard');
+    }
+  }, [router]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -24,8 +31,9 @@ export default function LoginPage() {
         login: login,
         senha: senha,
       });
-      const { access_token } = response.data;
+       const { access_token, refresh_token } = response.data;
       localStorage.setItem('access_token', access_token);
+      localStorage.setItem('refresh_token', refresh_token);
       router.push('/dashboard');
     } catch (err) {
       setError('Login ou senha inválidos. Tente novamente.');

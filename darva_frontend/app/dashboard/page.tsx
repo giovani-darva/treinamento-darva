@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
+import api from '../services/axios.config';
 import Navbar from '../components/navbar';
 
 interface User {
@@ -23,7 +23,7 @@ export default function DashboardPage() {
 
     const fetchUserProfile = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/auth/profile', {
+        const response = await api.get('http://localhost:3000/auth/profile', {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(response.data);

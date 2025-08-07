@@ -1,13 +1,10 @@
-// Em: app/settings/page.tsx
-
 "use client";
 
-import { useEffect, useState, Fragment } from 'react'; // Adicionado Fragment
-import axios from 'axios';
+import { useEffect, useState, Fragment } from 'react'; 
+import api from '../services/axios.config';
 import { useRouter } from 'next/navigation';
 import Navbar from '../components/navbar';
 
-// Tipagem para os dados de um usuário
 interface User {
   id: number;
   nome: string;
@@ -15,20 +12,17 @@ interface User {
   login: string;
 }
 
-// Tipagem para os dados que estão sendo editados
 type EditingUser = Omit<User, 'id'>;
 
 export default function SettingsPage() {
   const [users, setUsers] = useState<User[]>([]);
   const router = useRouter();
 
-  // Estados para controlar a edição e exclusão
   const [editingUserId, setEditingUserId] = useState<number | null>(null);
   const [editingUserData, setEditingUserData] = useState<EditingUser | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
-  // Função para buscar todos os usuários
   const fetchUsers = async () => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -36,7 +30,7 @@ export default function SettingsPage() {
       return;
     }
     try {
-      const response = await axios.get('http://localhost:3000/users', {
+      const response = await api.get('http://localhost:3000/users', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(response.data);
@@ -48,9 +42,8 @@ export default function SettingsPage() {
 
   useEffect(() => {
     fetchUsers();
-  }, []); // O router não é mais uma dependência necessária aqui
+  }, []); 
 
-  // Funções para controlar a edição
   const handleEditClick = (user: User) => {
     setEditingUserId(user.id);
     setEditingUserData({ nome: user.nome, login: user.login, cpf: user.cpf });
@@ -64,11 +57,11 @@ export default function SettingsPage() {
   const handleSaveEdit = async (id: number) => {
     const token = localStorage.getItem('access_token');
     try {
-      await axios.put(`http://localhost:3000/users/${id}`, editingUserData, {
+      await api.put(`http://localhost:3000/users/${id}`, editingUserData, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      handleCancelEdit(); // Sai do modo de edição
-      fetchUsers(); // Atualiza a lista de usuários
+      handleCancelEdit(); 
+      fetchUsers(); 
     } catch (error) {
       console.error('Falha ao salvar usuário:', error);
       alert('Não foi possível salvar as alterações.');
@@ -82,7 +75,6 @@ export default function SettingsPage() {
     });
   };
 
-  // Funções para controlar a exclusão e o modal
   const handleDeleteClick = (user: User) => {
     setUserToDelete(user);
     setShowDeleteModal(true);
@@ -93,12 +85,12 @@ export default function SettingsPage() {
     if (!userToDelete) return;
 
     try {
-      await axios.delete(`http://localhost:3000/users/${userToDelete.id}`, {
+      await api.delete(`http://localhost:3000/users/${userToDelete.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setShowDeleteModal(false);
       setUserToDelete(null);
-      fetchUsers(); // Atualiza a lista de usuários
+      fetchUsers();
     } catch (error) {
       console.error('Falha ao excluir usuário:', error);
       alert('Não foi possível excluir o usuário.');
@@ -128,7 +120,7 @@ export default function SettingsPage() {
               {users.map((user) => (
                 <tr key={user.id}>
                   {editingUserId === user.id ? (
-                    // ===== MODO DE EDIÇÃO COM BOTÕES ESTILIZADOS =====
+                    // MODO DE EDIÇÃO COM BOTÕES ESTILIZADOS 
                     <Fragment>
                       <td className="px-6 py-4"><input type="text" name="nome" value={editingUserData?.nome} onChange={handleEditDataChange} className="w-full p-1 border rounded text-black" /></td>
                       <td className="px-6 py-4"><input type="text" name="login" value={editingUserData?.login} onChange={handleEditDataChange} className="w-full p-1 border rounded text-black" /></td>
@@ -151,7 +143,7 @@ export default function SettingsPage() {
                       </td>
                     </Fragment>
                   ) : (
-                    // ===== MODO DE VISUALIZAÇÃO COM BOTÕES ESTILIZADOS =====
+                    // MODO DE VISUALIZAÇÃO COM BOTÕES ESTILIZADOS
                     <Fragment>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.nome}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.login}</td>
