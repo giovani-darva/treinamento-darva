@@ -1,9 +1,12 @@
-import { Inject, Injectable, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { Inject, Injectable, ConflictException, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { Kysely } from 'kysely';
 import { Database } from 'src/database/interfaces/database.interface';
 import { ConfigService } from '@nestjs/config';
+import { MailerService } from '@nestjs-modules/mailer';
+import { randomBytes } from 'crypto';
+import { promisify } from 'util';
 
 @Injectable()
 export class AuthService {
@@ -11,7 +14,8 @@ export class AuthService {
     @Inject('KYSELY_INSTANCE') private readonly db: Kysely<Database>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-  ) { }
+    private readonly mailerService: MailerService,
+  ) {}
 
   async validateUser(login: string, pass: string): Promise<any> {
     const user = await this.db
@@ -50,26 +54,13 @@ export class AuthService {
   }
 
   async register(userData: any) {
-    console.log('--- [AuthService] Iniciando processo de registro ---');
-    console.log('Dados recebidos do frontend:', userData);
-
     if (!userData.senha) {
-      console.error('ERRO: A senha não foi fornecida nos dados do usuário.');
       throw new InternalServerErrorException('Senha é obrigatória.');
     }
 
     const hashedPassword = await bcrypt.hash(userData.senha, 10);
-    console.log('Senha criptografada com sucesso.');
 
     try {
-      console.log('Tentando inserir usuário no banco de dados com os seguintes valores:', {
-        nome: userData.nome,
-        cpf: userData.cpf,
-        data_nascimento: userData.data_nascimento,
-        login: userData.login,
-        senha: hashedPassword,
-      });
-
       const newUser = await this.db
         .insertInto('users')
         .values({
@@ -78,24 +69,87 @@ export class AuthService {
           data_nascimento: userData.data_nascimento,
           login: userData.login,
           senha: hashedPassword,
+          email: userData.email,
         })
-        .returning(['id', 'login', 'nome'])
+        .returning(['id', 'login', 'nome', 'email'])
         .executeTakeFirstOrThrow();
 
-      console.log('Usuário inserido com sucesso no banco:', newUser);
-      console.log('----------------------------------------------------');
       return newUser;
 
     } catch (error) {
-      console.error('--- ERRO CAPTURADO AO TENTAR INSERIR NO BANCO ---');
-      console.error(error);
-      console.error('----------------------------------------------------');
-
       if (error.code === '23505') {
-        throw new ConflictException('CPF ou Login já cadastrado.');
+        throw new ConflictException('CPF, Login ou Email já cadastrado.');
       }
 
       throw new InternalServerErrorException('Ocorreu um erro ao cadastrar o usuário.');
     }
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.db
+      .selectFrom('users')
+      .selectAll()
+      .where('email', '=', email)
+      .executeTakeFirst();
+    
+    if (!user) {
+      return { message: 'Link de redefinição enviado para o email!' };
+    }
+
+    const resetToken = (await promisify(randomBytes)(20)).toString('hex');
+    const resetExpires = new Date(Date.now() + 3600000); // 1 hora
+
+    await this.db
+      .updateTable('users')
+      .set({ 
+        password_reset_token: resetToken, 
+        password_reset_expires: resetExpires 
+      })
+      .where('id', '=', user.id)
+      .execute();
+
+    const resetUrl = `${this.configService.get<string>('FRONTEND_URL')}/reset-password?token=${resetToken}`;
+
+    await this.mailerService.sendMail({
+      to: user.email,
+      subject: 'Link para Redefinição de Senha',
+      html: `
+        <h2>Redefinição de Senha</h2>
+        <p>Você está recebendo este e-mail porque solicitou a redefinição de senha.</p>
+        <p>Por favor, clique no seguinte link, ou cole no seu navegador para completar o processo:</p>
+        <a href="${resetUrl}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Redefinir Senha</a>
+        <p>Este link expirará em 1 hora.</p>
+        <p>Se você não solicitou esta redefinição, ignore este e-mail.</p>
+      `,
+    });
+
+    return { message: 'Se um usuário com este e-mail existir, um link de redefinição foi enviado.' };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    const user = await this.db
+      .selectFrom('users')
+      .selectAll()
+      .where('password_reset_token', '=', token)
+      .where('password_reset_expires', '>', new Date())
+      .executeTakeFirst();
+
+    if (!user) {
+      throw new UnauthorizedException('Token de redefinição inválido ou expirado.');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await this.db
+      .updateTable('users')
+      .set({
+        senha: hashedPassword,
+        password_reset_token: null,
+        password_reset_expires: null,
+      })
+      .where('id', '=', user.id)
+      .execute();
+
+    return { message: 'Senha redefinida com sucesso.' };
   }
 }

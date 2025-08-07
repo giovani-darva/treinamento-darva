@@ -14,7 +14,7 @@ export class UsersController {
 
     @UseGuards(JwtAuthGuard)
     @Put(':id')
-    update(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: { nome: string; login: string; cpf: string }) {
+    update(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: { nome: string; login: string; cpf: string, email: string}) {
         return this.usersService.update(id, updateUserDto);
     }
 

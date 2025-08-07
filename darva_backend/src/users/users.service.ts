@@ -15,17 +15,19 @@ export class UsersService {
       'cpf',
       'data_nascimento',
       'login',
-      'created_at'
+      'created_at',
+      'email',
     ]).execute();
   }
 
-  async update(id: number, updateUserDto: { nome: string; login: string; cpf: string }) {
+  async update(id: number, updateUserDto: { nome: string; login: string; cpf: string; email:string }) {
     const updatedUser = await this.db
       .updateTable('users')
       .set({
         nome: updateUserDto.nome,
         login: updateUserDto.login,
         cpf: updateUserDto.cpf,
+        email:updateUserDto.email
       })
       .where('id', '=', id)
       .returningAll()

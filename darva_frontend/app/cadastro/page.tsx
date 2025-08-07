@@ -9,6 +9,7 @@ export default function CadastroPage() {
     const [nome, setNome] = useState('');
     const [cpf, setCpf] = useState('');
     const [dataNascimento, setDataNascimento] = useState('');
+    const [email, setEmail] = useState('');
     const [login, setLogin] = useState('');
     const [senha, setSenha] = useState('');
     const [error, setError] = useState('');
@@ -21,7 +22,7 @@ export default function CadastroPage() {
         setError('');
         setSuccess('');
 
-        if (!nome || !cpf || !dataNascimento || !login || !senha) {
+        if (!nome || !cpf || !dataNascimento || !login || !senha || !email) {
             setError('Todos os campos são obrigatórios.');
             return;
         }
@@ -33,12 +34,12 @@ export default function CadastroPage() {
                 nome,
                 cpf: cpfLimpo,
                 data_nascimento: dataNascimento,
+                email,
                 login,
                 senha,
             });
 
             setSuccess('Cadastro realizado com sucesso! Redirecionando para o login...');
-
             setTimeout(() => {
                 router.push('/login');
             }, 2000);
@@ -54,18 +55,9 @@ export default function CadastroPage() {
 
     return (
         <main className="flex min-h-screen w-screen">
-            <div className="hidden md:block md:w-2/3 bg-[url('/background-logo.jpg')] bg-cover bg-center">
-            </div>
+            <div className="hidden md:block md:w-2/3 bg-[url('/background-logo.jpg')] bg-cover bg-center"></div>
             <div className="w-full md:w-1/3 bg-white flex items-center justify-center p-8 md:p-12">
-                <form
-                    onSubmit={handleSubmit}
-                    className="flex flex-col gap-3 w-full max-w-sm"
-                >
-                    <img
-                        src="/logo-mobile.png"
-                        alt="Logo da Empresa"
-                        className="block md:hidden w-90 mx-auto mb-6"
-                    />
+                <form onSubmit={handleSubmit} className="flex flex-col gap-3 w-full max-w-sm">
                     <h2 className="text-2xl font-bold text-black text-center mb-4">Crie sua Conta</h2>
 
                     <div>
@@ -76,6 +68,11 @@ export default function CadastroPage() {
                     <div>
                         <label htmlFor="cpf" className="font-bold text-gray-700">CPF</label>
                         <input type="text" id="cpf" value={cpf} onChange={(e) => setCpf(e.target.value)} className="w-full mt-1 p-2 bg-transparent border-b-2 border-gray-400 text-black focus:outline-none focus:border-blue-500" />
+                    </div>
+
+                    <div>
+                        <label htmlFor="email" className="font-bold text-gray-700">E-mail</label>
+                        <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full mt-1 p-2 bg-transparent border-b-2 border-gray-400 text-black focus:outline-none focus:border-blue-500" />
                     </div>
 
                     <div>

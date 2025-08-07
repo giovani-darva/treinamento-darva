@@ -1,15 +1,18 @@
 "use client";
 
-import { useEffect, useState, Fragment } from 'react'; 
-import api from '../services/axios.config';
+import { useEffect, useState, Fragment } from 'react';
+import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import Navbar from '../components/navbar';
+import api from '../services/axios.config';
+
 
 interface User {
   id: number;
   nome: string;
   cpf: string;
   login: string;
+  email: string; 
 }
 
 type EditingUser = Omit<User, 'id'>;
@@ -17,22 +20,14 @@ type EditingUser = Omit<User, 'id'>;
 export default function SettingsPage() {
   const [users, setUsers] = useState<User[]>([]);
   const router = useRouter();
-
   const [editingUserId, setEditingUserId] = useState<number | null>(null);
   const [editingUserData, setEditingUserData] = useState<EditingUser | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
   const fetchUsers = async () => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
     try {
-      const response = await api.get('http://localhost:3000/users', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.get('/users'); 
       setUsers(response.data);
     } catch (error) {
       console.error('Falha ao buscar usuários:', error);
@@ -42,11 +37,12 @@ export default function SettingsPage() {
 
   useEffect(() => {
     fetchUsers();
-  }, []); 
+  }, []);
+
 
   const handleEditClick = (user: User) => {
     setEditingUserId(user.id);
-    setEditingUserData({ nome: user.nome, login: user.login, cpf: user.cpf });
+    setEditingUserData({ nome: user.nome, login: user.login, cpf: user.cpf, email: user.email });
   };
 
   const handleCancelEdit = () => {
@@ -55,13 +51,10 @@ export default function SettingsPage() {
   };
 
   const handleSaveEdit = async (id: number) => {
-    const token = localStorage.getItem('access_token');
     try {
-      await api.put(`http://localhost:3000/users/${id}`, editingUserData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      handleCancelEdit(); 
-      fetchUsers(); 
+      await api.put(`/users/${id}`, editingUserData); 
+      handleCancelEdit();
+      fetchUsers();
     } catch (error) {
       console.error('Falha ao salvar usuário:', error);
       alert('Não foi possível salvar as alterações.');
@@ -81,13 +74,9 @@ export default function SettingsPage() {
   };
 
   const handleConfirmDelete = async () => {
-    const token = localStorage.getItem('access_token');
     if (!userToDelete) return;
-
     try {
-      await api.delete(`http://localhost:3000/users/${userToDelete.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/users/${userToDelete.id}`); 
       setShowDeleteModal(false);
       setUserToDelete(null);
       fetchUsers();
@@ -99,13 +88,12 @@ export default function SettingsPage() {
     }
   };
 
-
   return (
     <div className="min-h-screen bg-gray-100">
       <Navbar />
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <h1 className="text-2xl font-bold text-gray-800 mb-4">Gerenciamento de Usuários</h1>
-
+        
         <div className="bg-white shadow overflow-hidden sm:rounded-lg">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -113,6 +101,7 @@ export default function SettingsPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Login</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CPF</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                 <th className="relative px-6 py-3"><span className="sr-only">Ações</span></th>
               </tr>
             </thead>
@@ -120,48 +109,28 @@ export default function SettingsPage() {
               {users.map((user) => (
                 <tr key={user.id}>
                   {editingUserId === user.id ? (
-                    // MODO DE EDIÇÃO COM BOTÕES ESTILIZADOS 
                     <Fragment>
-                      <td className="px-6 py-4"><input type="text" name="nome" value={editingUserData?.nome} onChange={handleEditDataChange} className="w-full p-1 border rounded text-black" /></td>
-                      <td className="px-6 py-4"><input type="text" name="login" value={editingUserData?.login} onChange={handleEditDataChange} className="w-full p-1 border rounded text-black" /></td>
-                      <td className="px-6 py-4"><input type="text" name="cpf" value={editingUserData?.cpf} onChange={handleEditDataChange} className="w-full p-1 border rounded text-black" /></td>
+                      <td className="px-6 py-4"><input type="text" name="nome" value={editingUserData?.nome} onChange={handleEditDataChange} className="w-full p-1 border rounded text-black"/></td>
+                      <td className="px-6 py-4"><input type="text" name="login" value={editingUserData?.login} onChange={handleEditDataChange} className="w-full p-1 border rounded text-black"/></td>
+                      <td className="px-6 py-4"><input type="text" name="cpf" value={editingUserData?.cpf} onChange={handleEditDataChange} className="w-full p-1 border rounded text-black"/></td>
+                      <td className="px-6 py-4"><input type="email" name="email" value={editingUserData?.email} onChange={handleEditDataChange} className="w-full p-1 border rounded text-black"/></td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                         <div className="flex flex-col md:flex-row gap-2">
-                          <button
-                            onClick={() => handleSaveEdit(user.id)}
-                            className="py-1 px-3 rounded-md font-semibold text-green-700 bg-green-100 hover:bg-green-200 transition-colors"
-                          >
-                            Salvar
-                          </button>
-                          <button
-                            onClick={handleCancelEdit}
-                            className="py-1 px-3 rounded-md font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
-                          >
-                            Cancelar
-                          </button>
+                            <button onClick={() => handleSaveEdit(user.id)} className="py-1 px-3 rounded-md font-semibold text-green-700 bg-green-100 hover:bg-green-200 transition-colors">Salvar</button>
+                            <button onClick={handleCancelEdit} className="py-1 px-3 rounded-md font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors">Cancelar</button>
                         </div>
                       </td>
                     </Fragment>
                   ) : (
-                    // MODO DE VISUALIZAÇÃO COM BOTÕES ESTILIZADOS
                     <Fragment>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.nome}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.login}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.cpf}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                         <div className="flex flex-col md:flex-row gap-2">
-                          <button
-                            onClick={() => handleEditClick(user)}
-                            className="py-1 px-3 rounded-md font-semibold text-indigo-700 bg-indigo-100 hover:bg-indigo-200 transition-colors"
-                          >
-                            Editar
-                          </button>
-                          <button
-                            onClick={() => handleDeleteClick(user)}
-                            className="py-1 px-3 rounded-md font-semibold text-red-700 bg-red-100 hover:bg-red-200 transition-colors"
-                          >
-                            Excluir
-                          </button>
+                          <button onClick={() => handleEditClick(user)} className="py-1 px-3 rounded-md font-semibold text-indigo-700 bg-indigo-100 hover:bg-indigo-200 transition-colors">Editar</button>
+                          <button onClick={() => handleDeleteClick(user)} className="py-1 px-3 rounded-md font-semibold text-red-700 bg-red-100 hover:bg-red-200 transition-colors">Excluir</button>
                         </div>
                       </td>
                     </Fragment>

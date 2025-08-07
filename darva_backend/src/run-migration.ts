@@ -2,6 +2,7 @@ import { Kysely, PostgresDialect, Migrator } from 'kysely';
 import { Pool } from 'pg';
 
 import * as Migration20250804 from './database/migrations/20250804103000-create-user-table';
+import * as Migration20250807 from './database/migrations/20250807140000-add-email-and-reset-token-to-users';
 
 async function migrate() {
   const db = new Kysely<any>({
@@ -10,7 +11,7 @@ async function migrate() {
         host: 'localhost',
         port: 5432,
         user: 'postgres',
-        password: '1234', 
+        password: '1234',
         database: 'darva_database',
       }),
     }),
@@ -22,6 +23,7 @@ async function migrate() {
       getMigrations: async () => {
         return {
           '20250804103000-create-user-table': Migration20250804,
+          '20250807140000-add-email-and-reset-token-to-users': Migration20250807,
         };
       },
     },
