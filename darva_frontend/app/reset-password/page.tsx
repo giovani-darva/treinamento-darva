@@ -42,7 +42,7 @@ function ResetPasswordForm() {
     }
 
     try {
-      await axios.post('http://localhost:3000/auth/reset-password', {
+      await axios.post('http://192.168.5.173:3000/auth/reset-password', {
         token: token,
         newPass: newPassword,
       });

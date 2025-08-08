@@ -11,22 +11,22 @@ import { UsersModule } from './users/users.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true, // Torna o ConfigModule global
+      isGlobal: true, 
     }),
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         transport: {
-          host: 'smtp.ethereal.email',
-          port: 587,
-          secure: false, // true for 465, false for other ports
+          host: 'smtp.gmail.com',
+          port: 465,
+          secure: true, 
           auth: {
-            user: configService.get<string>('ETHEREAL_USER'), // Adicione no seu .env
-            pass: configService.get<string>('ETHEREAL_PASS'), // Adicione no seu .env
+            user: configService.get<string>('SMTP_USER'), 
+            pass: configService.get<string>('SMTP_PASS'), 
           },
         },
         defaults: {
-          from: '"Nome do App" <noreply@example.com>',
+          from: `"App Darva" <${configService.get<string>('SMTP_USER')}>`,
         },
       }),
       inject: [ConfigService],

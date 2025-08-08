@@ -123,7 +123,7 @@ export class AuthService {
       `,
     });
 
-    return { message: 'Se um usuário com este e-mail existir, um link de redefinição foi enviado.' };
+    return { message: 'Link de redefinição enviado para o email!' };
   }
 
   async resetPassword(token: string, newPassword: string) {
